@@ -47,7 +47,6 @@ export async function onRequest(context) {
       const { action } = body;
 
       switch (action) {
-        // ... ('generateImage' and 'startVideoFromUrl' cases are unchanged) ...
         case 'generateImage': {
           const { prompt, ratio } = body; if (!prompt) throw new Error('Image prompt is missing.');
           const imageKey = `generated-images/${Date.now()}-${prompt.substring(0, 20).replace(/\s/g, '_')}.png`;
@@ -60,15 +59,11 @@ export async function onRequest(context) {
           const { videoPrompt, imageUrl, duration, ratio } = body; if (!videoPrompt || !imageUrl) throw new Error("Missing video prompt or image URL.");
           return await startImageToVideoJob(imageUrl, videoPrompt, parseInt(duration || '5', 10), ratio || '1280:720', 'generated-image', env);
         }
-
-        // --- NEW CASE TO HANDLE VIDEO UPSCALING ---
         case 'upscaleVideo': {
           const { videoUrl } = body;
           if (!videoUrl) throw new Error('Missing videoUrl to upscale.');
           
           console.log(`Starting upscale for video: ${videoUrl}`);
-
-          // Create a new filename for the upscaled video
           const originalKey = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
           const upscaledKey = originalKey.replace('.mp4', '-4k.mp4');
           
@@ -84,17 +79,14 @@ export async function onRequest(context) {
             throw new Error(data.error || `Runway Upscale API error: ${runwayResponse.status}`);
           }
           
-          // Store task info for polling, using the new key
           await env.TASK_INFO_KV.put(data.id, JSON.stringify({
-            type: 'video', // The output is still a video, so we can reuse the type
-            r2Key: `videos/${upscaledKey}`, // Save to the same videos folder
+            type: 'video',
+            r2Key: `videos/${upscaledKey}`,
             r2PublicUrl: env.R2_PUBLIC_URL
           }));
           
           return jsonResponse({ success: true, taskId: data.id });
         }
-
-        // --- B3. Poll for status of any task (no changes needed here) ---
         case 'status': {
           const { taskId } = body;
           if (!taskId) throw new Error('Invalid status check request.');
@@ -117,7 +109,7 @@ export async function onRequest(context) {
             const successPayload = { success: true, status: data.status, progress: data.progress };
             if (taskInfo.type === 'image') {
               successPayload.imageUrl = finalUrl;
-            } else { // This handles both 'video' and 'upscale'
+            } else {
               successPayload.videoUrl = finalUrl;
             }
             return jsonResponse(successPayload);
@@ -135,11 +127,7 @@ export async function onRequest(context) {
   }
 }
 
-// Helper functions (unchanged)
-async function startImageToVideoJob(imageUrl, prompt, duration, ratio, originalName, env) { /* ... */ }
-function jsonResponse(data, status = 200) { /* ... */ }
-
-// Paste the unchanged helper functions here for completeness
+// Helper function to start the image-to-video job
 async function startImageToVideoJob(imageUrl, prompt, duration, ratio, originalName, env) {
   const RUNWAY_API_BASE = 'https://api.dev.runwayml.com/v1';
   const videoKey = `videos/${Date.now()}-${originalName.split('.').slice(0, -1).join('.') || originalName}.mp4`;
@@ -153,6 +141,8 @@ async function startImageToVideoJob(imageUrl, prompt, duration, ratio, originalN
   await env.TASK_INFO_KV.put(data.id, JSON.stringify({ type: 'video', r2Key: videoKey, r2PublicUrl: env.R2_PUBLIC_URL }));
   return jsonResponse({ success: true, taskId: data.id, status: data.status });
 }
+
+// Helper for consistent JSON responses
 function jsonResponse(data, status = 200) {
     return new Response(JSON.stringify(data), {
         status: status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
