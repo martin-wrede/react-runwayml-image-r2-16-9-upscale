@@ -1,3 +1,4 @@
+// FINAL CORRECTED VERSION - 22 Aug 2025
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -134,7 +135,7 @@ async function startImageToVideoJob(imageUrl, prompt, duration, ratio, originalN
   const response = await fetch(`${RUNWAY_API_BASE}/image_to_video`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${env.RUNWAYML_API_KEY}`, 'X-Runway-Version': '2024-11-06', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'gen4_turbo', promptText: prompt, promptImage: imageUrl, seed: Math.floor(Math.random() * 4294967295), watermark: false, duration: duration, ratio: ratio }),
+    body: JSON.stringify({ model: 'gen4__turbo', promptText: prompt, promptImage: imageUrl, seed: Math.floor(Math.random() * 4294967295), watermark: false, duration: duration, ratio: ratio }),
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || `Runway I2V API returned status ${response.status}`);
