@@ -49,8 +49,7 @@ export async function onRequest(context) {
             headers: COMMON_HEADERS,
             // --- THE FIX IS HERE ---
             body: JSON.stringify({
-              model: 'upscale', // THE FIX IS HERE: The model name is 'upscale', not 'video_upscale'
-              videoUri: videoUrl
+              videoUri: videoUrl // Send ONLY the required videoUri parameter
             }),
           });
 
