@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function App() {
-  // Existing State
+  // Existing State // comment
   const [prompt, setPrompt] = useState('');
   const [videoUrl, setVideoUrl] = useState(null); // This will now hold the initial HD video URL
   const [isGenerating, setIsGenerating] = useState(false);
