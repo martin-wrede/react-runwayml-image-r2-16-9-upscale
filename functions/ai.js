@@ -49,8 +49,8 @@ export async function onRequest(context) {
             headers: COMMON_HEADERS,
             // --- THE FIX IS HERE ---
             body: JSON.stringify({
-              model: 'video_upscale', // Added the required model name
-              videoUri: videoUrl       // Corrected the key from 'video' to 'videoUri'
+              model: 'upscale', // THE FIX IS HERE: The model name is 'upscale', not 'video_upscale'
+              videoUri: videoUrl
             }),
           });
 
@@ -70,7 +70,7 @@ export async function onRequest(context) {
         }
 
         case 'status': {
-          // This entire case is correct and does not need changes
+          /* ... unchanged ... */
           const { taskId } = body;
           if (!taskId) throw new Error('Invalid status check request.');
           const statusUrl = `${RUNWAY_API_BASE}/tasks/${taskId}`;
